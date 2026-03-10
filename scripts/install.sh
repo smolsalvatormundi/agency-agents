@@ -18,6 +18,7 @@
 #   cursor       -- Copy rules to .cursor/rules/ in current directory
 #   aider        -- Copy CONVENTIONS.md to current directory
 #   windsurf     -- Copy .windsurfrules to current directory
+#   openclaw     -- Copy agents to ~/.openclaw/workspace/agency-agents/
 #   all          -- Install for all detected tools (default)
 #
 # Flags:
@@ -80,7 +81,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INTEGRATIONS="$REPO_ROOT/integrations"
 
-ALL_TOOLS=(claude-code copilot antigravity gemini-cli opencode cursor aider windsurf)
+ALL_TOOLS=(claude-code copilot antigravity gemini-cli opencode cursor aider windsurf openclaw)
 
 # ---------------------------------------------------------------------------
 # Usage
@@ -111,6 +112,7 @@ detect_cursor()       { command -v cursor >/dev/null 2>&1 || [[ -d "${HOME}/.cur
 detect_opencode()     { command -v opencode >/dev/null 2>&1 || [[ -d "${HOME}/.config/opencode" ]]; }
 detect_aider()        { command -v aider >/dev/null 2>&1; }
 detect_windsurf()     { command -v windsurf >/dev/null 2>&1 || [[ -d "${HOME}/.codeium" ]]; }
+detect_openclaw()     { command -v openclaw >/dev/null 2>&1 || [[ -d "${HOME}/.openclaw" ]]; }
 
 is_detected() {
   case "$1" in
@@ -122,6 +124,7 @@ is_detected() {
     cursor)      detect_cursor      ;;
     aider)       detect_aider       ;;
     windsurf)    detect_windsurf    ;;
+    openclaw)    detect_openclaw    ;;
     *)           return 1 ;;
   esac
 }
@@ -137,6 +140,7 @@ tool_label() {
     cursor)      printf "%-14s  %s" "Cursor"       "(.cursor/rules)"         ;;
     aider)       printf "%-14s  %s" "Aider"        "(CONVENTIONS.md)"        ;;
     windsurf)    printf "%-14s  %s" "Windsurf"     "(.windsurfrules)"        ;;
+    openclaw)    printf "%-14s  %s" "OpenClaw"     "(workspace subagents)"   ;;
   esac
 }
 
@@ -381,6 +385,25 @@ install_windsurf() {
   warn "Windsurf: project-scoped. Run from your project root to install there."
 }
 
+install_openclaw() {
+  local dest="${HOME}/.openclaw/workspace/agency-agents"
+  local count=0
+  mkdir -p "$dest"
+  local dir f first_line
+  for dir in design engineering game-development marketing paid-media product project-management \
+              testing support spatial-computing specialized; do
+    [[ -d "$REPO_ROOT/$dir" ]] || continue
+    while IFS= read -r -d '' f; do
+      first_line="$(head -1 "$f")"
+      [[ "$first_line" == "---" ]] || continue
+      cp "$f" "$dest/"
+      (( count++ )) || true
+    done < <(find "$REPO_ROOT/$dir" -name "*.md" -type f -print0)
+  done
+  ok "OpenClaw: $count agents -> $dest"
+  warn "OpenClaw: Use sessions_spawn to activate agents, or copy to workspace subagents/"
+}
+
 install_tool() {
   case "$1" in
     claude-code) install_claude_code ;;
@@ -391,6 +414,7 @@ install_tool() {
     cursor)      install_cursor      ;;
     aider)       install_aider       ;;
     windsurf)    install_windsurf    ;;
+    openclaw)    install_openclaw    ;;
   esac
 }
 
