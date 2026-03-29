@@ -113,6 +113,8 @@ detect_opencode()     { command -v opencode >/dev/null 2>&1 || [[ -d "${HOME}/.c
 detect_aider()        { command -v aider >/dev/null 2>&1; }
 detect_windsurf()     { command -v windsurf >/dev/null 2>&1 || [[ -d "${HOME}/.codeium" ]]; }
 detect_openclaw()     { command -v openclaw >/dev/null 2>&1 || [[ -d "${HOME}/.openclaw" ]]; }
+ detect_qwen()         { command -v qwen >/dev/null 2>&1 || [[ -d "${HOME}/.qwen" ]]; }
+ detect_kimi()         { command -v kimi >/dev/null 2>&1; }
 
 is_detected() {
   case "$1" in
@@ -125,6 +127,8 @@ is_detected() {
     aider)       detect_aider       ;;
     windsurf)    detect_windsurf    ;;
     openclaw)    detect_openclaw    ;;
+     qwen)        detect_qwen        ;;
+     kimi)        detect_kimi        ;;
     *)           return 1 ;;
   esac
 }
